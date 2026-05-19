@@ -751,14 +751,6 @@ footer p { font-size: 13px; letter-spacing: 0.02em; }
     <span class="eyebrow">Primeiro passo</span>
     <h2>Pronto para <em>começar a sério?</em></h2>
     <p class="lead-final">Deixa os teus dados e marcamos uma conversa inicial gratuita. Sem compromisso. Apenas para perceber se o método encaixa na tua vida — e como começar.</p>
-    <!--
-      ===========================================================
-      IMPORTANTE: substitui "teuemail@exemplo.com" pelo teu email
-      real (aparece também no <script> mais abaixo).
-      Na primeira submissão recebes um email do Formsubmit a
-      pedir para confirmares — confirma e fica pronto.
-      ===========================================================
-    -->
     <form class="lead-form" id="leadForm" onsubmit="handleSubmit(event)">
       <input type="text" name="nome" placeholder="Nome" required>
       <input type="email" name="email" placeholder="Email" required>
@@ -772,11 +764,6 @@ footer p { font-size: 13px; letter-spacing: 0.02em; }
         <option value="pos-parto">Pós-parto / pré-menopausa / menopausa</option>
         <option value="outro">Outro</option>
       </select>
-      <!-- Campos invisíveis: anti-spam + assunto + redireccionamento desligado -->
-      <input type="hidden" name="_subject" value="Novo lead THEBODYLAB">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_template" value="table">
-      <input type="text" name="_honey" style="display:none">
       <button type="submit" class="submit-btn">Marcar conversa inicial →</button>
     </form>
     <p class="form-note">Respondo pessoalmente em 24 horas úteis. Os teus dados são confidenciais e usados apenas para te contactar.</p>
@@ -793,10 +780,12 @@ footer p { font-size: 13px; letter-spacing: 0.02em; }
 </footer>
 
 <script>
-// ===========================================================
-// IMPORTANTE: substitui "teuemail@exemplo.com" pelo teu email real.
-// ===========================================================
-const EMAIL_DESTINO = 'thebodylaab@gmail.com';
+// ================================================================
+// IMPORTANTE — SUBSTITUI O VALOR ABAIXO PELA TUA ACCESS KEY
+// Vai a Web3Forms → My First Form → Form Setup
+// Copia a Access Key e cola entre as aspas
+// ================================================================
+const ACCESS_KEY = 'COLA-AQUI-A-TUA-ACCESS-KEY';
 
 async function handleSubmit(e) {
   e.preventDefault();
@@ -807,19 +796,22 @@ async function handleSubmit(e) {
   btn.disabled = true;
 
   const formData = new FormData(form);
-  const data = Object.fromEntries(formData.entries());
+  formData.append('access_key', ACCESS_KEY);
+  formData.append('subject', 'Novo lead THEBODYLAB');
+  formData.append('from_name', 'Landing THEBODYLAB');
 
   try {
-    const res = await fetch(`https://formsubmit.co/ajax/${EMAIL_DESTINO}`, {
+    const res = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(data)
+      body: formData
     });
-    if (!res.ok) throw new Error('Falha no envio');
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'Falha no envio');
     btn.textContent = '✓ Recebido. Entro em contacto em breve.';
     btn.style.background = '#1F1B16';
     form.reset();
   } catch (err) {
+    console.error(err);
     btn.textContent = '✗ Erro ao enviar. Tenta novamente.';
     btn.style.background = '#8E3F22';
   }
